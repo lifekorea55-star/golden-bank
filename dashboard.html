@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Golden Bank - Dashboard</title>
+  <style>
+    :root{
+      --gold: #d4af37;
+      --gold-strong: #ffdf00;
+      --bg-dark: #111;
+      --card: rgba(17,17,17,0.95);
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #121212, #2e2e2e);
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+      -webkit-font-smoothing:antialiased;
+    }
+    .container {
+      background: var(--card);
+      border: 2px solid var(--gold);
+      border-radius: 15px;
+      padding: 30px 20px;
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(212,175,55,0.15);
+    }
+    .profile img {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      box-shadow: 0 6px 18px rgba(212,175,55,0.25);
+      object-fit: cover;
+      background: #222;
+    }
+    h2 { color: var(--gold); margin:6px 0 4px; }
+    .balance { font-size: 18px; margin: 10px 0 18px; color:#e8e2c8; }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      background: var(--gold);
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: black;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    button:hover { background: var(--gold-strong); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+
+    .options { display: none; margin-top: 15px; }
+    .options button { display:flex; align-items:center; justify-content:center; gap:10px; font-size:15px; padding:12px; }
+    .options img { width:26px; height:26px; object-fit:contain; filter: none; }
+
+    /* Modal base */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1200;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.65);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-content {
+      background: var(--bg-dark);
+      border: 2px solid var(--gold);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    }
+    .modal-content h3 { margin: 6px 0 12px; color: var(--gold); font-size:18px; }
+    .modal-content input, .modal-content select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid rgba(212,175,55,0.25);
+      border-radius: 8px;
+      background: #1f1f1f;
+      color: white;
+      font-size: 14px;
+    }
+    .modal-content .row { display:flex; gap:10px; }
+    .modal-content .row .col { flex:1; }
+
+    .close { float: right; font-size: 20px; cursor: pointer; color: #aaa; }
+    .close:hover { color: white; }
+
+    /* Confirmation modal styling */
+    .confirm-box {
+      text-align: left;
+      background: linear-gradient(180deg, rgba(212,175,55,0.03), transparent);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 8px 0 14px;
+      color: #fffbe8;
+      border: 1px solid rgba(212,175,55,0.12);
+    }
+    .confirm-row { display:flex; justify-content:space-between; padding:6px 0; }
+    .confirm-label { color:#dcd0a3; font-weight:600; }
+    .confirm-value { color:#ffffff; font-weight:700; }
+
+    /* Success message styling */
+    .success-message {
+      font-size:16px;
+      line-height:1.4;
+      color:#f6f0d9;
+      padding: 10px 8px;
+      border-radius:8px;
+      background: linear-gradient(90deg, rgba(212,175,55,0.06), rgba(255,223,0,0.02));
+      border: 1px solid rgba(212,175,55,0.12);
+    }
+
+    /* Buttons inline */
+    .btn-inline { display:flex; gap:10px; margin-top:12px; }
+    .btn-inline button { flex:1; width:auto; padding:10px 12px; font-weight:700; }
+
+    /* Responsive tweaks */
+    @media (max-width:480px){
+      .container { padding:22px 14px; }
+      .modal-content { padding:14px; }
+      .profile img { width:86px; height:86px; }
+      button { padding:12px; font-size:15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="profile">
+      <img src="C:\Users\Mohamed Hamad\Desktop\New folder (2)\12.jpg" alt="User Photo">
+    </div>
+    <h2>John Anderson</h2>
+    <div class="balance">Balance: <strong>983543.12 USD</strong></div>
+
+    <button onclick="toggleTransfer()">💸 Money Transfer</button>
+
+    <div class="options" id="transferOptions">
+      <button onclick="openModal('PayPal')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"> PayPal
+      </button>
+      <button onclick="openModal('GCash')">
+        <img src="https://cdn-icons-png.flaticon.com/512/2331/2331947.png" alt="GCash"> GCash
+      </button>
+      <button onclick="openModal('Western Union')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Western_Union_logo.svg" alt="Western Union"> Western Union
+      </button>
+    </div>
+
+    <button onclick="openModal('Deposit')">🏦 Deposit</button>
+    <button onclick="openModal('Withdraw')">🏧 Withdraw (via Barcode)</button>
+  </div>
+
+  <!-- Password Modal -->
+  <div id="passwordModal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-labelledby="modalTitle">
+      <span class="close" onclick="closeModal()" title="Close">&times;</span>
+      <h3 id="modalTitle">Enter Password</h3>
+      <input type="password" id="modalPassword" placeholder="Password" autocomplete="current-password">
+      <div class="btn-inline">
+        <button onclick="checkPassword()">Confirm</button>
+        <button onclick="closeModal()" style="background:#444;color:#fff;border:1px solid rgba(255,255,255,0.06);">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GCash Form Modal -->
+  <div id="gcashModal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-labelledby="gcashTitle">
+      <span class="close" onclick="closeGcashModal()" title="Close">&times;</span>
+      <h3 id="gcashTitle">GCash Transfer</h3>
+
+      <input type="text" id="gcashPhone" placeholder="Phone Number (e.g. +63917xxxxxxx)">
+      <input type="text" id="gcashCountry" placeholder="Country (e.g. Philippines)">
+      <input type="number" id="gcashAmount" placeholder="Amount (USD)" min="0" step="0.01">
+
+      <div style="margin-top:10px;" class="btn-inline">
+        <button onclick="openConfirm()">Confirm</button>
+        <button onclick="closeGcashModal()" style="background:#444;color:#fff;border:1px solid rgba(255,255,255,0.06);">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal (styled) -->
+  <div id="confirmModal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-labelledby="confirmTitle">
+      <span class="close" onclick="closeConfirm()" title="Close">&times;</span>
+      <h3 id="confirmTitle">Confirm Transfer</h3>
+
+      <div class="confirm-box">
+        <div class="confirm-row"><div class="confirm-label">Service:</div><div class="confirm-value" id="cf-service">GCash</div></div>
+        <div class="confirm-row"><div class="confirm-label">Phone:</div><div class="confirm-value" id="cf-phone">—</div></div>
+        <div class="confirm-row"><div class="confirm-label">Country:</div><div class="confirm-value" id="cf-country">—</div></div>
+        <div class="confirm-row"><div class="confirm-label">Amount:</div><div class="confirm-value" id="cf-amount">—</div></div>
+      </div>
+
+      <div style="text-align:left; color:#e9dfb8; font-size:13px; margin-top:6px;">
+        Please confirm the details above. By confirming you authorize the transfer.
+      </div>
+
+      <div class="btn-inline">
+        <button onclick="doFinalTransfer()">Confirm Transfer</button>
+        <button onclick="closeConfirm()" style="background:#444;color:#fff;border:1px solid rgba(255,255,255,0.06);">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-labelledby="successTitle">
+      <span class="close" onclick="closeSuccess()" title="Close">&times;</span>
+      <h3 id="successTitle">Transfer Scheduled</h3>
+
+      <div class="success-message">
+        You will receive the money after <strong>6 hours</strong>.<br><br>
+        Thank you for using <strong>Golden Bank</strong>.
+      </div>
+
+      <div class="btn-inline" style="margin-top:16px;">
+        <button onclick="closeSuccess()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentAction = "";
+
+    function toggleTransfer() {
+      const options = document.getElementById("transferOptions");
+      options.style.display = (options.style.display === "block") ? "none" : "block";
+    }
+
+    function openModal(action) {
+      currentAction = action;
+      document.getElementById("modalTitle").innerText = "Enter password to continue with " + action;
+      document.getElementById("modalPassword").value = "";
+      // show password modal
+      document.getElementById("passwordModal").style.display = "flex";
+      document.getElementById("passwordModal").setAttribute('aria-hidden','false');
+      // focus field after a short delay
+      setTimeout(()=>document.getElementById("modalPassword").focus(),80);
+    }
+
+    function closeModal() {
+      document.getElementById("passwordModal").style.display = "none";
+      document.getElementById("passwordModal").setAttribute('aria-hidden','true');
+    }
+
+    function checkPassword() {
+      const pwd = document.getElementById("modalPassword").value.trim();
+
+      // Special case for GCash: password is 27121989
+      if (currentAction === "GCash") {
+        if (pwd === "27121989") {
+          // close password modal and open gcash form
+          closeModal();
+          document.getElementById("gcashPhone").value = "";
+          document.getElementById("gcashCountry").value = "";
+          document.getElementById("gcashAmount").value = "";
+          document.getElementById("gcashModal").style.display = "flex";
+          document.getElementById("gcashModal").setAttribute('aria-hidden','false');
+          setTimeout(()=>document.getElementById("gcashPhone").focus(),80);
+        } else {
+          alert("Wrong password ❌");
+        }
+        return;
+      }
+
+      // Default password for other actions
+      if (pwd === "John 557j") {
+        alert(currentAction + " action approved ✅");
+        closeModal();
+      } else {
+        alert("Wrong password ❌");
+      }
+    }
+
+    function closeGcashModal() {
+      document.getElementById("gcashModal").style.display = "none";
+      document.getElementById("gcashModal").setAttribute('aria-hidden','true');
+    }
+
+    // when user clicks Confirm on gcash form -> open confirmation modal
+    function openConfirm(){
+      const phone = document.getElementById("gcashPhone").value.trim();
+      const country = document.getElementById("gcashCountry").value.trim();
+      const amount = document.getElementById("gcashAmount").value.trim();
+
+      if(!phone || !country || !amount || Number(amount) <= 0){
+        alert("Please fill all fields with valid values ❌");
+        return;
+      }
+
+      // fill confirmation values
+      document.getElementById("cf-service").innerText = "GCash";
+      document.getElementById("cf-phone").innerText = phone;
+      document.getElementById("cf-country").innerText = country;
+      // format amount to 2 decimals
+      const amt = Number(amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+      document.getElementById("cf-amount").innerText = amt + " USD";
+
+      // show confirmation modal
+      document.getElementById("confirmModal").style.display = "flex";
+      document.getElementById("confirmModal").setAttribute('aria-hidden','false');
+
+      // hide gcash form behind
+      document.getElementById("gcashModal").style.display = "none";
+      document.getElementById("gcashModal").setAttribute('aria-hidden','true');
+    }
+
+    // close confirmation and return to gcash form (Edit)
+    function closeConfirm(){
+      document.getElementById("confirmModal").style.display = "none";
+      document.getElementById("confirmModal").setAttribute('aria-hidden','true');
+      // reopen gcash form so user can edit
+      document.getElementById("gcashModal").style.display = "flex";
+      document.getElementById("gcashModal").setAttribute('aria-hidden','false');
+    }
+
+    // final transfer action -> show success styled message
+    function doFinalTransfer(){
+      // simulate transfer scheduling
+      document.getElementById("confirmModal").style.display = "none";
+      document.getElementById("confirmModal").setAttribute('aria-hidden','true');
+
+      // show success modal
+      document.getElementById("successModal").style.display = "flex";
+      document.getElementById("successModal").setAttribute('aria-hidden','false');
+    }
+
+    function closeSuccess(){
+      document.getElementById("successModal").style.display = "none";
+      document.getElementById("successModal").setAttribute('aria-hidden','true');
+    }
+
+    // Close modal when clicking outside the content
+    window.onclick = function(event) {
+      const passwordModal = document.getElementById("passwordModal");
+      const gcashModal = document.getElementById("gcashModal");
+      const confirmModal = document.getElementById("confirmModal");
+      const successModal = document.getElementById("successModal");
+
+      if (event.target === passwordModal) { passwordModal.style.display = "none"; passwordModal.setAttribute('aria-hidden','true'); }
+      if (event.target === gcashModal) { gcashModal.style.display = "none"; gcashModal.setAttribute('aria-hidden','true'); }
+      if (event.target === confirmModal) { confirmModal.style.display = "none"; confirmModal.setAttribute('aria-hidden','true'); }
+      if (event.target === successModal) { successModal.style.display = "none"; successModal.setAttribute('aria-hidden','true'); }
+    }
+
+    // Optional: close modals on Esc
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape'){
+        ['passwordModal','gcashModal','confirmModal','successModal'].forEach(id=>{
+          const el = document.getElementById(id);
+          if(el && el.style.display === 'flex') { el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
